@@ -2,15 +2,18 @@
 
 ## What This Is
 
-A set of Claude skills for auditing Noir ZK circuits for business logic
+A set of LLM skills for auditing Noir ZK circuits for business logic
 and mathematical vulnerabilities. Not a replacement for static analysis
 (run nargo separately). Specifically targets bugs that compilers cannot find.
+
+**Target:** Noir ≥0.30 with Barretenberg backend (BN254). Other backends
+supported with manual field prime verification.
 
 ## Files
 
 ```
 NOIR_AUDIT.md              Master skill — orchestration and phase protocol
-NOIR_BUG_TAXONOMY.md       Knowledge base of 6 bug classes with examples  
+NOIR_BUG_TAXONOMY.md       Knowledge base of 8 bug classes with examples
 NOIR_MATH_REASONING.md     How to reason mathematically about constraints
 NOIR_FALSE_POSITIVE_FILTER.md  Three-gate filter before reporting findings
 NOIR_REPORT_TEMPLATE.md    Output format for the final report
@@ -35,21 +38,22 @@ require it.
 
 ```bash
 cat NOIR_AUDIT.md >> CLAUDE.md
-cat NOIR_BUG_TAXONOMY.md >> CLAUDE.md  
+cat NOIR_BUG_TAXONOMY.md >> CLAUDE.md
 cat NOIR_MATH_REASONING.md >> CLAUDE.md
 cat NOIR_FALSE_POSITIVE_FILTER.md >> CLAUDE.md
 cat NOIR_REPORT_TEMPLATE.md >> CLAUDE.md
 ```
 
 2. Run:
+
 ```bash
 nargo compile
 nargo info --print-acir > acir_output.txt
 ```
 
 3. Open Claude Code in your circuit directory and say:
-"Audit this Noir circuit using the audit protocol in CLAUDE.md.
-The ACIR output is in acir_output.txt."
+   "Audit this Noir circuit using the audit protocol in CLAUDE.md.
+   The ACIR output is in acir_output.txt."
 
 ### Option 3 — API with extended thinking
 
@@ -57,7 +61,7 @@ The ACIR output is in acir_output.txt."
 import anthropic
 
 skills = ""
-for skill in ["NOIR_AUDIT.md", "NOIR_BUG_TAXONOMY.md", 
+for skill in ["NOIR_AUDIT.md", "NOIR_BUG_TAXONOMY.md",
               "NOIR_MATH_REASONING.md", "NOIR_FALSE_POSITIVE_FILTER.md",
               "NOIR_REPORT_TEMPLATE.md"]:
     skills += open(skill).read() + "\n\n---\n\n"
@@ -81,25 +85,29 @@ print(response.content[-1].text)
 
 ## What It Finds
 
-| Bug Class | Example |
-|---|---|
-| Field arithmetic confusion | Equality checks that pass for unintended field values |
-| Spec mismatch | Constraints that prove Y when spec requires X (Y ⊂ X) |
-| Composition flaws | Caller trusts called function without binding constraints |
-| Crypto primitive misuse | Poseidon params not achieving claimed security level |
-| Protocol logic errors | Valid proof used in wrong context enables replay |
-| Unconstrained boundary | Hint values used without re-validation |
+| Bug Class                   | Example                                                   |
+| --------------------------- | --------------------------------------------------------- |
+| Field arithmetic confusion  | Equality checks that pass for unintended field values     |
+| Spec mismatch               | Constraints that prove Y when spec requires X (Y ⊂ X)     |
+| Composition flaws           | Caller trusts called function without binding constraints |
+| Crypto primitive misuse     | Poseidon params not achieving claimed security level      |
+| Protocol logic errors       | Valid proof used in wrong context enables replay          |
+| Unconstrained boundary      | Hint values used without re-validation                    |
+| Recursive proof composition | Inner proof substituted or public inputs unbound          |
+| Oracle & external data      | Unverified price feeds, timestamps, or oracle values      |
 
 ## What It Does NOT Find
 
 - Underconstrained signals → use `nargo compile`
-- Range check issues → use `nargo compile --pedantic-solving`  
+- Range check issues → use `nargo compile --pedantic-solving`
 - Type errors → use `nargo check`
+- Smart contract integration bugs → out of scope
 - Novel bug classes with no precedent in audit literature
 
 ## Expected Output
 
 The audit produces a structured report with:
+
 - Confirmed findings (concrete malicious witness specified)
 - High confidence unconfirmed findings (rigorous argument, witness not computed)
 - Clean bill of health if no issues found
