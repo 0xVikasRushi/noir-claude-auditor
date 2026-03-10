@@ -1,19 +1,8 @@
 {
   "name": "noir-circuit-auditor",
-  "description": "Audit Noir ZK circuits for business logic vulnerabilities by analyzing the gap between intended claims and actual constraints",
   "version": "1.0.0",
+  "description": "Audit Noir ZK circuits for business logic vulnerabilities by analyzing the gap between intended claims and actual constraints",
   "author": {
     "name": "0xvikasrushi"
-  },
-  "repository": "https://github.com/0xvikasrushi/noir-claude-auditor",
-  "license": "MIT",
-  "keywords": [
-    "noir",
-    "zk",
-    "zero-knowledge",
-    "security",
-    "audit",
-    "circuit",
-    "vulnerability"
-  ]
+  }
 }

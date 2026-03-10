@@ -1,1 +1,4 @@
 /no-commit-codebases/
+# Local dev symlinks (plugin source lives in skills/, these are for local testing)
+/.claude/skills/
+/.claude/commands/
